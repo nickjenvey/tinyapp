@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
     <title>TinyApp</title>
-  </head>
+
+  </head> <!-- End Head -->
+
   <body style="font-size:20px; padding:50px;">
+
     <header>
       <% include partials/_header %>
-    </header>
-    <a href="#" style="display:inline-block; margin-bottom:20px;">Create new TinyURL</a>
+    </header> <!-- End Header Include -->
+
+    <a href="/urls/new" style="display:inline-block; margin-bottom:20px;">Create new TinyURL</a>
+
     <h2>My URL's</h2>
     <ul>
       <% for(let key in urls) { %>
       <li><strong><%= key %></strong>: <%= urls[key] %></li>
       <% } %>
     </ul>
-  </body>
+
+  </body> <!-- End Body -->
+
 </html>
