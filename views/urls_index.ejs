@@ -1,32 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <title>TinyApp</title>
+</head> <!-- End Head -->
+<body>
 
-  <head>
+  <header>
+    <% include partials/_header %>
+  </header> <!-- End Header Include -->
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
-    <title>TinyApp</title>
-
-  </head> <!-- End Head -->
-
-  <body style="font-size:20px; padding:50px;">
-
-    <header>
-      <% include partials/_header %>
-    </header> <!-- End Header Include -->
-
+  <div style="max-width:650px; margin:0 auto;">
+    
     <a href="/urls/new" style="display:inline-block; margin-bottom:20px;">Create new TinyURL</a>
-
+  
     <h2>My URL's</h2>
-    <ul>
-      <% for(let key in urls) { %>
-      <li><strong><%= key %></strong>: <%= urls[key] %></li>
-      <% } %>
-    </ul>
 
-  </body> <!-- End Body -->
+    <div class="row no-gutters">
+      <div class="col-md-12" style="background-color: #fff; border: solid 1px #ddd; border-radius: 4px; padding:9px 14px 5px">
+        <div class="row">
+          <% for(let shortURL in urls) { %>
+            <div class="col-md-9" style="padding:6px 15px; flex:0 0 calc(100% - 162px); max-width:100%;">
+              <strong><%= shortURL %></strong>: <%= urls[shortURL] %>
+            </div>
+            <div class="col-md-3" style="flex:0 0 162px; padding-bottom:4px;">
+              <a href="/urls/<%= shortURL %>" class="btn btn-primary">Edit</a>
+              <form style="display:inline-block;" method="POST" action="/urls/<%= shortURL %>/delete">
+                <button class="btn btn-warning" type="submit">Delete</button>
+              </form>
+            </div>
+            <br />
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
 
+</body> <!-- End Body -->
 </html>
+
+<!-- style="background-color: #fff; border: solid 1px #ddd; border-radius: 4px;" -->
