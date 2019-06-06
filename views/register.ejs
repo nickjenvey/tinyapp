@@ -4,20 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>TinyApp - New URL</title>
+  <title>TinyApp - Registration</title>
   <style>
     body {
       background-color: #f9f8ff;
     }
     .btn-link {
-      color: #767676;
+      color: #2a2e3f;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 12px;
     }
     .btn-link:hover {
-      color: #563d7c;
+      color: #3166ff;
       text-decoration: none;
     }
     .header-link {
@@ -36,7 +36,7 @@
       color: #fff;
       background-color: rgba(255,255,255,0.25);
       border-color: rgba(255,255,255,0.25);
-      transition: background-color 0.5s, border-color 0.5s, color 0.5s;
+      transition: opacity 0.5s;
     }
     .btn-warning:hover {
       color: #259eff;
@@ -52,19 +52,21 @@
   </header> <!-- End Header Include -->
 
   <div style="max-width:650px; margin:0 auto;">
-    <h3>Create a new TinyURL</h3>
+  
+    <h2>Register</h2>
 
     <div class="row no-gutters">
-      <div class="col-md-12" style="background-color:#fff; border:solid 2px #eeeffa; border-radius:4px; padding:9px 14px 5px">
-        <form method="POST" class="form-inline" action="/urls">
-          <div class="form-group mb-2">
-            <label for="longURL">Enter a URL:</label>
-            <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 420px; margin: 1em">
-            <button type="submit" class="btn btn-success">Submit</button>
-          </div>
-        </form>
-      </div>
+        <div class="col-md-12" style="background-color:#fff; border:solid 2px #eeeffa; border-radius:4px; padding:9px 14px 5px">
+          <form method="POST" class="form-inline" action="/register">
+            <div class="form-group mb-2">
+                <input class="form-control" type="email" name="email" placeholder="Email Address" style="width: 200px; margin: 1em 6px 1em 0">
+                <input class="form-control" type="password" name="password" placeholder="Password" style="width: 200px; margin: 1em 1em 1em 0">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+          </form>
+        </div>
     </div>
+
   </div>
 
 </body> <!-- End Body -->
