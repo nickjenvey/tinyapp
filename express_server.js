@@ -98,7 +98,7 @@ app.get("/urls.json", (req, res) => {
 // Create new URL page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    userID: req.session.user_id
+    userID: users[req.session.user_id]
   }
   res.render("urls_new", templateVars);
 });
@@ -106,7 +106,7 @@ app.get("/urls/new", (req, res) => {
 // Registration page
 app.get("/register", (req, res) => {
   const templateVars = {
-    userID: req.session.user_id
+    userID: users[req.session.user_id]
   }
   res.render("register", templateVars);
 });
@@ -114,7 +114,7 @@ app.get("/register", (req, res) => {
 // Login page
 app.get("/login", (req, res) => {
   const templateVars = {
-    userID: req.session.user_id
+    userID: users[req.session.user_id]
   }
   res.render("login", templateVars);
 });
@@ -124,9 +124,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    userID: req.session.user_id
+    userID: users[req.session.user_id]
   };
-  console.log('inside get /urls/shortURL:', templateVars);
   if (templateVars.longURL) {
     res.render("urls_show", templateVars);
   } else {
@@ -196,22 +195,16 @@ app.post("/urls", (req, res) => {
 
 // Edit a link
 app.put("/urls/:shortURL", (req, res) => {
-  console.log('responding to editing a link');
   const newURL = req.body.newurl;
   const shortURL = req.params.shortURL;
   const userCookie = req.session.user_id;
   if (isCurrentUser(userCookie)) {
-    console.log('is current user');
     if (newURL) {
-      console.log('shortURL', shortURL);
-      console.log('updating with newURL', newURL);
       urlDatabase[shortURL].longURL = newURL;
     }
   } else {
-    console.log('not authorized')
     res.sendStatus(403);
   }
-  console.log('redirecting to /urls/shortURL');
   res.redirect(`/urls/${shortURL}`);
 });
 
