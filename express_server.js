@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const express = require("express");
 const app = express();
 const PORT = 8080;
@@ -47,7 +48,7 @@ const emailExists = (email) => {
 
 const passwordExists = (email, password) => {
   for (const user in users) {
-    if (users[user].email === email && password === users[user].password) {
+    if (users[user].email === email && bcrypt.compareSync(password, hashedPassword)); {
       return users[user].id;
     }
   }
@@ -73,9 +74,9 @@ app.get("/urls.json", (req, res) => {
 
 // Login handler
 app.post("/login", (req, res) => {
-  const emailAddress = req.body.email;
-  const pass = req.body.password;
-  const userID = passwordExists(emailAddress, pass);
+  const email = req.body.email;
+  const password = req.body.password;
+  const userID = passwordExists(email, password);
   if (!userID) {
     res.sendStatus(403);
   } else {
@@ -196,17 +197,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Registration handler
 app.post("/register", (req, res) => {
   const userID = generateRandomString();
-  const emailAddress = req.body.email;
-  const pass = req.body.password;
-  if (!emailAddress && pass) {
+  const email = req.body.email;
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  if (!email && password) {
     res.sendStatus(400);
-  } else if (emailExists(emailAddress)) {
+  } else if (emailExists(email)) {
     res.sendStatus(400);
   } else {
     const newUser = {
       id: userID,
-      email: emailAddress,
-      password: pass,
+      email,
+      password: hashedPassword
     }
     users[userID] = newUser;
     res.cookie("user_id", userID);
