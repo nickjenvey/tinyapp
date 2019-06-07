@@ -4,10 +4,12 @@ const PORT = 8080;
 const bcrypt = require('bcrypt');
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
+const methodOverride = require('method-override');
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({keys:["something"]}))
+app.use(methodOverride('_method'))
 
 const urlDatabase = {
   "b2xVn2": {
@@ -34,8 +36,8 @@ const users = {
 };
 
 const emailExists = (email) => {
-  for (const user in users) {
-    if (email === users[user].email) {
+  for (const key in users) {
+    if (email === users[key].email) {
       return true;
     }
   }
@@ -43,9 +45,9 @@ const emailExists = (email) => {
 };
 
 const passwordExists = (email, password) => {
-  for (const user in users) {
-    if (users[user].email === email && bcrypt.compareSync(password, users[user].password)); {
-      return users[user].id;
+  for (const key in users) {
+    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)); {
+      return users[key].id;
     }
   }
   return false;
@@ -66,8 +68,84 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// ############ GETS ############
+// Index page
+app.get("/urls", (req, res) => {
+  const userCookie = req.session.user_id;
+  let userID = "";
+  if(userCookie) {
+    userID = users[userCookie].id;      // Checks userCookie against users database - extra secruity
+  }
+  const usersUrls = [];
+  if (userID) {
+    for (const key in urlDatabase) {
+      if (userID === urlDatabase[key].userID) {
+        usersUrls.push( {shortURL: key, longURL: urlDatabase[key].longURL} );
+      }
+    }
+  }
+  const templateVars = {
+    urls: usersUrls,
+    userID: users[req.session.user_id]
+  };
+  res.render("urls_index", templateVars);
+});
 
-// ----------POSTS----------
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// Create new URL page
+app.get("/urls/new", (req, res) => {
+  const templateVars = {
+    userID: req.session.user_id
+  }
+  res.render("urls_new", templateVars);
+});
+
+// Registration page
+app.get("/register", (req, res) => {
+  const templateVars = {
+    userID: req.session.user_id
+  }
+  res.render("register", templateVars);
+});
+
+// Login page
+app.get("/login", (req, res) => {
+  const templateVars = {
+    userID: req.session.user_id
+  }
+  res.render("login", templateVars);
+});
+
+// Individual URL page
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    userID: req.session.user_id
+  };
+  console.log('inside get /urls/shortURL:', templateVars);
+  if (templateVars.longURL) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
+});
+
+// Shorter notation + redirect to actual URL
+app.get("/u/:shortURL", (req, res) => {
+  const url = urlDatabase[req.params.shortURL];
+  if (url) {
+    res.redirect(url.longURL);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+
+// ############ POSTS ############
 // Login handler
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -117,22 +195,28 @@ app.post("/urls", (req, res) => {
 });
 
 // Edit a link
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
+  console.log('responding to editing a link');
   const newURL = req.body.newurl;
   const shortURL = req.params.shortURL;
   const userCookie = req.session.user_id;
   if (isCurrentUser(userCookie)) {
+    console.log('is current user');
     if (newURL) {
-      urlDatabase[shortURL] = newURL;
+      console.log('shortURL', shortURL);
+      console.log('updating with newURL', newURL);
+      urlDatabase[shortURL].longURL = newURL;
     }
   } else {
+    console.log('not authorized')
     res.sendStatus(403);
   }
+  console.log('redirecting to /urls/shortURL');
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Delete a link
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const userCookie = req.session.user_id;
   if (isCurrentUser(userCookie)) {
     delete urlDatabase[req.params.shortURL];
@@ -142,81 +226,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
-// ----------GETS----------
-// Create new URL page
-app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    userID: req.session.user_id
-  }
-  res.render("urls_new", templateVars);
-});
-
-// Registration page
-app.get("/register", (req, res) => {
-  const templateVars = {
-    userID: req.session.user_id
-  }
-  res.render("register", templateVars);
-});
-
-// Login page
-app.get("/login", (req, res) => {
-  const templateVars = {
-    userID: req.session.user_id
-  }
-  res.render("login", templateVars);
-});
-
-// Access individual URL page
-app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    userID: req.session.user_id
-  };
-  if (templateVars.longURL) {
-    res.render("urls_show", templateVars);
-  } else {
-    res.redirect("/urls");
-  }
-});
-
-// Shorter notation + redirect to actual URL
-app.get("/u/:shortURL", (req, res) => {
-  const url = urlDatabase[req.params.shortURL];
-  if (url) {
-    res.redirect(url.longURL);
-  } else {
-    res.sendStatus(404);
-  }
-});
-
-// Index page
-app.get("/urls", (req, res) => {
-  const userCookie = req.session.user_id;
-  let userID = "";
-  if(userCookie) {
-    userID = users[userCookie].id;
-  }
-  const usersUrls = [];
-  if (userID) {
-    for (const key in urlDatabase) {
-      if (userID === urlDatabase[key].userID) {
-        usersUrls.push( {shortURL: key, longURL: urlDatabase[key].longURL} );
-      }
-    }
-  }
-  const templateVars = {
-    urls: usersUrls,
-    userID: users[req.session.user_id]
-  };
-  res.render("urls_index", templateVars);
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 
 // Catchall
 app.get("*", (req, res) => {
