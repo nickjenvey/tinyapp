@@ -65,7 +65,11 @@
 
   <div style="max-width:650px; margin:0 auto;">
 
-    <a class="create-new-link" href="/urls/new">Create a new TinyURL</a>
+    <% if (userID) { %>
+      <a class="create-new-link" href="/urls/new">Create a new TinyURL</a>
+    <% } else { %>
+      <a class="create-new-link" href="/login">Login to create a new TinyURL</a>
+    <% } %>
     
     <h2>TinyURL => <%= shortURL %></h2>
     

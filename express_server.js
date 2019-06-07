@@ -13,15 +13,26 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser())
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "z39bw4"
+  },
+  "9sm5xK": {
+     longURL: "http://www.google.com",
+     userID: "b6UTxQ"
+  }
 };
 
 const users = {
   "z39bw4": {
     id: "z39bw4",
-    email: "test@test.com",
+    email: "user1@test.com",
     password: "123"
+  },
+  "b6UTxQ": {
+    id: "b6UTxQ",
+    email: "user2@test.com",
+    password: "456"
   }
 };
 
@@ -38,6 +49,15 @@ const passwordExists = (email, password) => {
   for (const user in users) {
     if (users[user].email === email && password === users[user].password) {
       return users[user].id;
+    }
+  }
+  return false;
+}
+
+const isCurrentUser = (userID) => {
+  for (const key in urlDatabase) {
+    if (userID === urlDatabase[key].userID) {
+      return true;
     }
   }
   return false;
@@ -72,8 +92,21 @@ app.post("/logout", (req, res) => {
 
 // Index page
 app.get("/urls", (req, res) => {
+  const userCookie = req.cookies["user_id"];
+  let userID = "";
+  if(userCookie) {
+    userID = users[userCookie].id;
+  }
+  const usersUrls = [];
+  if (userID) {
+    for (const key in urlDatabase) {
+      if (userID === urlDatabase[key].userID) {
+        usersUrls.push( {shortURL: key, longURL: urlDatabase[key].longURL} );
+      }
+    }
+  }
   const templateVars = {
-    urls: urlDatabase,
+    urls: usersUrls,
     userID: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
@@ -119,8 +152,12 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Shorter notation + redirect to actual URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  const url = urlDatabase[req.params.shortURL];
+  if (url) {
+    res.redirect(url.longURL);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
 // Generate random string for new URL's
@@ -134,15 +171,25 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const newURL = req.body.newurl;
   const shortURL = req.params.shortURL;
-  if (newURL) {
-    urlDatabase[shortURL] = newURL;
+  const userCookie = req.cookies["user_id"];
+  if (isCurrentUser(userCookie)) {
+    if (newURL) {
+      urlDatabase[shortURL] = newURL;
+    }
+  } else {
+    res.sendStatus(403);
   }
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Delete a link
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  const userCookie = req.cookies["user_id"];
+  if (isCurrentUser(userCookie)) {
+    delete urlDatabase[req.params.shortURL];
+  } else {
+    res.sendStatus(403);
+  }
   res.redirect("/urls");
 });
 
