@@ -46,7 +46,7 @@ const emailExists = (email) => {
 
 const passwordExists = (email, password) => {
   for (const key in users) {
-    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)); {
+    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
       return users[key].id;
     }
   }
@@ -181,7 +181,7 @@ app.post("/register", (req, res) => {
       password: hashedPassword
     }
     users[userID] = newUser;
-    res.cookie("user_id", userID);
+    req.session.user_id = userID;
     res.redirect("/urls");
   }
 });
