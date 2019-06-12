@@ -71,10 +71,13 @@ app.listen(PORT, () => {
 // ############ GETS ############
 // Index page
 app.get("/urls", (req, res) => {
-  const userCookie = req.session.user_id;
-  let userID = "";
-  if(userCookie) {
-    userID = users[userCookie].id;      // Checks userCookie against users database - extra secruity
+  let userID = null;
+  if (req.session.user_id) {
+    if (users[req.session.user_id]) {
+      userID = req.session.user_id;       // Checks user against users database - extra secruity
+    } else {
+      userID = null;
+    }
   }
   const usersUrls = [];
   if (userID) {
@@ -121,15 +124,24 @@ app.get("/login", (req, res) => {
 
 // Individual URL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    userID: users[req.session.user_id]
-  };
-  if (templateVars.longURL) {
-    res.render("urls_show", templateVars);
+  const userCookie = req.session.user_id;
+  if (urlDatabase[req.params.shortURL]){
+    if (userCookie === urlDatabase[req.params.shortURL].userID) {
+      const templateVars = {
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL,
+        userID: users[req.session.user_id]
+      };
+      if (templateVars.longURL) {
+        res.render("urls_show", templateVars);
+      } else {
+        res.redirect("/urls");
+      }
+    } else {
+      res.sendStatus(403);
+    }
   } else {
-    res.redirect("/urls");
+    res.sendStatus(404);
   }
 });
 
@@ -189,8 +201,11 @@ app.post("/register", (req, res) => {
 // Generate random string for new URL's
 app.post("/urls", (req, res) => {
   const randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
-  res.redirect(`/urls/${randomString}`);
+  urlDatabase[randomString] = {
+    longURL: req.body.longURL,
+    userID: req.session.user_id
+  }
+  res.redirect("/urls");
 });
 
 // Edit a link
